@@ -1,0 +1,297 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -528,
+        48
+      ],
+      "id": "2b05cbe1-de22-44b2-9049-901722632e57",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"q\": \"(AI OR Gemini or Claude or OpenAI or ChatGPT or Artificial Intelligence)\",\n  \"from\": \"{{ $now.minus({ days: 2 }).toISODate() }}\",\n  \"sortBy\": \"publishedAt\",\n  \"language\": \"en\",\n  \"pageSize\": \"20\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"X-Api-Key\": \"1633d446f5d54417991d29222d2509a1\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -256,
+        48
+      ],
+      "id": "5b07dd56-95d2-4ec8-858f-5875af5cd1ec",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert tech journalist.  You are given multiple AI news articles from today. Your task is to combine them into ONE clear, concise, and well-structured news briefing.  Instructions: 1. Identify the most important topics and trends across all articles. 2. Remove duplicate or repetitive information. 3. Merge related news into unified points. 4. Write in a professional but simple tone. 5. Do NOT list articles separately — create a single flowing article. 6. Keep it concise (150–250 words). 7. Add a short headline at the top.  Format: Headline  Summary paragraph (covering all key developments clearly and smoothly)  Input: {{ JSON.stringify($json[\"articles\"])}}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an expert tech journalist.  You are given multiple AI news articles from today. Your task is to combine them into ONE clear, concise, and well-structured news briefing.  Instructions: 1. Identify the most important topics and trends across all articles. 2. Remove duplicate or repetitive information. 3. Merge related news into unified points. 4. Write in a professional but simple tone. 5. Do NOT list articles separately — create a single flowing article. 6. Keep it concise (150–250 words). 7. Add a short headline at the top.  Format: Headline  Summary paragraph (covering all key developments clearly and smoothly)  Input: {{ JSON.stringify($json[\"articles\"])}}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -48,
+        48
+      ],
+      "id": "d892326b-5275-45fe-b41c-3a9a3d1f7a2b",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        224
+      ],
+      "id": "2741a0fb-a1b2-49c7-90f1-53632aa58342",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "VIx9RfOByWXKAzx5",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "mahivakharia131@gmail.com",
+        "subject": "Today's Top 10 AI news",
+        "emailType": "text",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        -112
+      ],
+      "id": "e8f58aee-e7d1-4151-be0a-66dd7332c8fc",
+      "name": "Send a message",
+      "webhookId": "df0efb3f-d5d5-49b7-bfd1-610c20dad1be",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "WL7co2TlkXVFfOo7",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        384
+      ],
+      "id": "06c42059-d249-4304-a548-952cbde3f1e1",
+      "name": "Send message",
+      "webhookId": "33fe1fc8-7d7f-4fb8-8600-277fb4c9020a"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        128
+      ],
+      "id": "453970b8-e9ae-48ff-91ae-a27e385a61b8",
+      "name": "Send a text message",
+      "webhookId": "ada1edf6-dd77-4e27-819b-1a1528d17c80"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        560,
+        -128
+      ],
+      "id": "44d146eb-d07d-41b4-aad8-396c4d17bdcf",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        128
+      ],
+      "id": "4da4edb0-18fd-46af-91af-779f8d1a91a2",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "VIx9RfOByWXKAzx5",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Send a message').item.json.labelIds }}{{ $('Send a message').item.json.threadId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryMongoDbChat",
+      "typeVersion": 1,
+      "position": [
+        688,
+        96
+      ],
+      "id": "744b95b0-52f2-49fe-b55b-d7f468d73a6e",
+      "name": "MongoDB Chat Memory"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
